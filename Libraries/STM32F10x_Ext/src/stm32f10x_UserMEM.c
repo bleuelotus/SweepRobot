@@ -31,15 +31,29 @@ void UserMEM_ByteWrite(u32 addr, u8 dat)
     FLASHStatus = FLASH_ProgramHalfWord(addr+STM32F10X_USER_MEM_BASE, HalfWord);
     /* Wait until End of programming */
     if(FLASH_COMPLETE != FLASHStatus){
-#ifdef DEBUG_LOG
         printf("Failed to program addr %d.\r\n", addr+STM32F10X_USER_MEM_BASE);
-#endif
+    }
+}
+
+void UserMEM_HalfWordWrite(u32 addr, u16 dat)
+{
+    volatile FLASH_Status   FLASHStatus = FLASH_COMPLETE;
+    
+    FLASHStatus = FLASH_ProgramHalfWord(addr+STM32F10X_USER_MEM_BASE, dat);
+    /* Wait until End of programming */
+    if(FLASH_COMPLETE != FLASHStatus){
+        printf("Failed to program addr %x.\r\n", addr+STM32F10X_USER_MEM_BASE);
     }
 }
 
 u8 UserMEM_ByteRead(u32 addr)
 {
    return (u8)(0xFF|(*((u16*)(addr+STM32F10X_USER_MEM_BASE))));
+}
+
+u16 UserMEM_HalfWordRead(u32 addr)
+{
+    return (*((u16*)(addr+STM32F10X_USER_MEM_BASE)));
 }
 
 void UserMEM_EraseByte(u32 addr)

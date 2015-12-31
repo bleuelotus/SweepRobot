@@ -16,6 +16,7 @@
 #include "MotionCtrl.h"
 #include "IrDA.h"
 #include "PwrManagement.h"
+#include "sweeprobottest.h"
 
 enum {
 
@@ -33,6 +34,7 @@ typedef enum {
     MSG_TYPE_CTRL,
     MSG_TYPE_PWR_STATION,
     MSG_TYPE_MOTION,
+    MSG_TYPE_TEST_CTRL,
 } MsgType_t;
 
 typedef union _DataType_s{
@@ -42,6 +44,7 @@ typedef union _DataType_s{
     enum BatteryEvt     BatEvt;
     enum MotionEvt      MEvt;
     PwrStationSigData_t PSSigDat;
+    USARTTestCtrlData_t TestCtrlDat;
 } MsgData_t;
 
 typedef struct _Msg_s {

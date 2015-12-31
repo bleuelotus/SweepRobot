@@ -11,6 +11,7 @@
 #include "boardcfg.h"
 #include "stm32f10x_conf.h"
 #include "SweepRobot.h"
+#include "SweepRobotTest.h"
 #include "MotorCtrl.h"
 #include "delay.h"
 #include "BatteryManage.h"
@@ -131,41 +132,63 @@ void SweepRobot_Start(void)
     while(1){
         /* Message loop */
         for(i = 0; i < ROBOT_MAIN_MSG_Q_SIZE; i++){
+            if(IS_UART4_GET_DATA_FINISH()){
+                USART_CmdProc();
+            }
             if(!MainMsgQ->Msg.expire){
                 if(MainMsgQ->Msg.prio == MSG_PRIO_HIGHEST){
-                    switch(MainMsgQ->Msg.type){
-                        case MSG_TYPE_PM:
-#ifdef DEBUG_LOG
-                            printf("PM msg %d.\r\n", MainMsgQ->Msg.Data.PMEvt);
-#endif
-                            SweepRobot_PMMsgProc(MainMsgQ->Msg.Data.PMEvt);
-                            break;
-                        case MSG_TYPE_BM:
-#ifdef DEBUG_LOG
-                            printf("BM msg %d.\r\n", MainMsgQ->Msg.Data.BatEvt);
-#endif
-                            SweepRobot_BMMsgProc(MainMsgQ->Msg.Data.BatEvt);
-                            break;
-                        case MSG_TYPE_CTRL:
-                            PM_ResetSysIdleState();
-#ifdef DEBUG_LOG
-                            printf("CTRL msg code:0x%X.\r\n", MainMsgQ->Msg.Data.ByteVal);
-#endif
-                            SweepRobot_CtrlMsgProc(MainMsgQ->Msg.Data.ByteVal);
-                            break;
-                        case MSG_TYPE_PWR_STATION:
-#ifdef DEBUG_LOG
-                            printf("PWR_STATION msg Pos:%d, Sig:0x%X.\r\n", MainMsgQ->Msg.Data.PSSigDat.src, MainMsgQ->Msg.Data.PSSigDat.sig);
-#endif
-                            SweepRobot_PwrStationMsgProc(&MainMsgQ->Msg.Data.PSSigDat);
-                            break;
-                        case MSG_TYPE_MOTION:
-                            PM_ResetSysIdleState();
-#ifdef DEBUG_LOG
-                            printf("MOTION msg 0x%X.\r\n", MainMsgQ->Msg.Data.MEvt);
-#endif
-                            SweepRobot_MotionMsgProc(MainMsgQ->Msg.Data.MEvt);
-                            break;
+                    if(gRobotState != ROBOT_STATE_TEST){
+                        switch(MainMsgQ->Msg.type){
+                            case MSG_TYPE_PM:
+    #ifdef DEBUG_LOG
+                                printf("PM msg %d.\r\n", MainMsgQ->Msg.Data.PMEvt);
+    #endif
+                                SweepRobot_PMMsgProc(MainMsgQ->Msg.Data.PMEvt);
+                                break;
+                            case MSG_TYPE_BM:
+    #ifdef DEBUG_LOG
+                                printf("BM msg %d.\r\n", MainMsgQ->Msg.Data.BatEvt);
+    #endif
+                                SweepRobot_BMMsgProc(MainMsgQ->Msg.Data.BatEvt);
+                                break;
+                            case MSG_TYPE_CTRL:
+                                PM_ResetSysIdleState();
+    #ifdef DEBUG_LOG
+                                printf("CTRL msg code:0x%X.\r\n", MainMsgQ->Msg.Data.ByteVal);
+    #endif
+                                SweepRobot_CtrlMsgProc(MainMsgQ->Msg.Data.ByteVal);
+                                break;
+                            case MSG_TYPE_PWR_STATION:
+    #ifdef DEBUG_LOG
+                                printf("PWR_STATION msg Pos:%d, Sig:0x%X.\r\n", MainMsgQ->Msg.Data.PSSigDat.src, MainMsgQ->Msg.Data.PSSigDat.sig);
+    #endif
+                                SweepRobot_PwrStationMsgProc(&MainMsgQ->Msg.Data.PSSigDat);
+                                break;
+                            case MSG_TYPE_MOTION:
+                                PM_ResetSysIdleState();
+    #ifdef DEBUG_LOG
+                                printf("MOTION msg 0x%X.\r\n", MainMsgQ->Msg.Data.MEvt);
+    #endif
+                                SweepRobot_MotionMsgProc(MainMsgQ->Msg.Data.MEvt);
+                                break;
+                            case MSG_TYPE_TEST_CTRL:
+                                PM_ResetSysIdleState();
+                                SweepRobotTest_StartCtrlMsgPorc(&MainMsgQ->Msg.Data.TestCtrlDat);
+                                break;
+                        }
+                    }else{                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+                        switch(MainMsgQ->Msg.type){
+                            case MSG_TYPE_CTRL:
+                                SweepRobotTest_IrDARxCodeProc(&MainMsgQ->Msg.Data.PSSigDat);
+                                break;
+                            case MSG_TYPE_PWR_STATION:
+                                SweepRobotTest_IrDARxCodeProc(&MainMsgQ->Msg.Data.PSSigDat);
+                                break;
+                            case MSG_TYPE_TEST_CTRL:
+                                PM_ResetSysIdleState();
+                                SweepRobotTest_CtrlMsgProc(&MainMsgQ->Msg.Data.TestCtrlDat);
+                                break;
+                        }
                     }
                     if(MainMsgQ->Msg.MsgCB!=NULL){
                         MainMsgQ->Msg.MsgCB();

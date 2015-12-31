@@ -1,6 +1,8 @@
 /Doc/
 /Libraries/CMSIS/Documentation/
 /Project/IAR/TP-X500-001/Obj/
+/Project/IAR/DB-ROBOT-S1/
+/Project/IAR/DB-ROBOT-S3/
 
 *.pdf
 *.html
@@ -37,3 +39,9 @@ Libraries/CMSIS/Documentation/RTOS/html/installdox
 *.crun
 *.dni
 *.wsdt
+*.ewd
+*.out
+*.hex
+*.ewp
+*.axf
+*.iex

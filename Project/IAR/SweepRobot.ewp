@@ -87,7 +87,7 @@
         </option>
         <option>
           <name>OGLastSavedByProductVersion</name>
-          <state>7.20.2.7418</state>
+          <state>7.10.1.6733</state>
         </option>
         <option>
           <name>GeneralEnableMisra</name>
@@ -167,19 +167,17 @@
         <wantNonLocal>1</wantNonLocal>
         <debug>0</debug>
         <option>
-          <name>CCOptimizationNoSizeConstraints</name>
-          <state>0</state>
-        </option>
-        <option>
           <name>CCDefines</name>
           <state>NDEBUG</state>
-          <state>REVISION_1_0</state>
+          <state>DEBUG_LOG</state>
+          <state>USE_IAR_EWARM</state>
+          <state>__USE_SWRB_TEST</state>
+          <state>REVISION_1_2</state>
           <state>STM32F10X_HD</state>
           <state>CLOCK_HSE</state>
           <state>USE_STDPERIPH_DRIVER</state>
           <state>KEY_PROC_WITH_REMOTE</state>
           <state>KEY_PROC_WITH_LED</state>
-          <state>DEBUG_LOG</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -240,11 +238,11 @@
         <option>
           <name>CCAllowList</name>
           <version>1</version>
-          <state>00000000</state>
+          <state>11111110</state>
         </option>
         <option>
           <name>CCDebugInfo</name>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>IEndianMode</name>
@@ -308,17 +306,16 @@
         </option>
         <option>
           <name>CCIncludePath2</name>
-          <state>$PROJ_DIR$\..\..\Libraries\STM32F10x_StdPeriph_Driver\inc</state>
-          <state>$PROJ_DIR$\..\..\Libraries\STM32F10x_Ext\inc</state>
           <state>$PROJ_DIR$\..\..\Libraries\CMSIS\Device\ST\STM32F10x\Include</state>
           <state>$PROJ_DIR$\..\..\Libraries\CMSIS\Include</state>
-          <state>$PROJ_DIR$\..\..\User</state>
-          <state>$PROJ_DIR$\..\..\User\APP</state>
-          <state>$PROJ_DIR$\..\..\User\BSP</state>
-          <state>$PROJ_DIR$\..\..\User\BSP\inc</state>
+          <state>$PROJ_DIR$\..\..\Libraries\STM32F10x_Ext\inc</state>
+          <state>$PROJ_DIR$\..\..\Libraries\STM32F10x_StdPeriph_Driver\inc</state>
           <state>$PROJ_DIR$\..\..\User\Framework\Common\inc</state>
-          <state>$PROJ_DIR$\..\..\User\Framework\UI</state>
+          <state>$PROJ_DIR$\..\..\User</state>
+          <state>$PROJ_DIR$\..\..\User\BSP\inc</state>
           <state>$PROJ_DIR$\..\..\User\Framework</state>
+          <state>$PROJ_DIR$\..\..\User\APP</state>
+          <state>$PROJ_DIR$\..\..\User\Framework\UI</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -338,16 +335,16 @@
         </option>
         <option>
           <name>CCOptLevel</name>
-          <state>1</state>
+          <state>3</state>
         </option>
         <option>
           <name>CCOptStrategy</name>
           <version>0</version>
-          <state>2</state>
+          <state>0</state>
         </option>
         <option>
           <name>CCOptLevelSlave</name>
-          <state>1</state>
+          <state>3</state>
         </option>
         <option>
           <name>CompilerMisraRules98</name>
@@ -412,13 +409,17 @@
           <state>0</state>
         </option>
         <option>
+          <name>CCOptimizationNoSizeConstraints</name>
+          <state>0</state>
+        </option>
+        <option>
           <name>CCNoLiteralPool</name>
           <state>0</state>
         </option>
         <option>
           <name>CCOptStrategySlave</name>
           <version>0</version>
-          <state>2</state>
+          <state>0</state>
         </option>
         <option>
           <name>CCGuardCalls</name>
@@ -1125,19 +1126,8 @@
         <wantNonLocal>1</wantNonLocal>
         <debug>0</debug>
         <option>
-          <name>CCOptimizationNoSizeConstraints</name>
-          <state>0</state>
-        </option>
-        <option>
           <name>CCDefines</name>
           <state>NDEBUG</state>
-          <state>REVISION_1_1</state>
-          <state>STM32F10X_HD</state>
-          <state>CLOCK_HSE</state>
-          <state>USE_STDPERIPH_DRIVER</state>
-          <state>KEY_PROC_WITH_REMOTE</state>
-          <state>KEY_PROC_WITH_LED</state>
-          <state>DEBUG_LOG</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -1198,11 +1188,11 @@
         <option>
           <name>CCAllowList</name>
           <version>1</version>
-          <state>00000000</state>
+          <state>11111110</state>
         </option>
         <option>
           <name>CCDebugInfo</name>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>IEndianMode</name>
@@ -1250,7 +1240,7 @@
         </option>
         <option>
           <name>OutputFile</name>
-          <state>$FILE_BNAME$.o</state>
+          <state></state>
         </option>
         <option>
           <name>CCLibConfigHeader</name>
@@ -1266,17 +1256,7 @@
         </option>
         <option>
           <name>CCIncludePath2</name>
-          <state>$PROJ_DIR$\..\..\Libraries\STM32F10x_StdPeriph_Driver\inc</state>
-          <state>$PROJ_DIR$\..\..\Libraries\STM32F10x_Ext\inc</state>
-          <state>$PROJ_DIR$\..\..\Libraries\CMSIS\Device\ST\STM32F10x\Include</state>
-          <state>$PROJ_DIR$\..\..\Libraries\CMSIS\Include</state>
-          <state>$PROJ_DIR$\..\..\User</state>
-          <state>$PROJ_DIR$\..\..\User\APP</state>
-          <state>$PROJ_DIR$\..\..\User\BSP</state>
-          <state>$PROJ_DIR$\..\..\User\BSP\inc</state>
-          <state>$PROJ_DIR$\..\..\User\Framework\Common\inc</state>
-          <state>$PROJ_DIR$\..\..\User\Framework\UI</state>
-          <state>$PROJ_DIR$\..\..\User\Framework</state>
+          <state></state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -1296,12 +1276,12 @@
         </option>
         <option>
           <name>CCOptLevel</name>
-          <state>1</state>
+          <state>3</state>
         </option>
         <option>
           <name>CCOptStrategy</name>
           <version>0</version>
-          <state>2</state>
+          <state>0</state>
         </option>
         <option>
           <name>CCOptLevelSlave</name>
@@ -1370,13 +1350,17 @@
           <state>0</state>
         </option>
         <option>
+          <name>CCOptimizationNoSizeConstraints</name>
+          <state>0</state>
+        </option>
+        <option>
           <name>CCNoLiteralPool</name>
           <state>0</state>
         </option>
         <option>
           <name>CCOptStrategySlave</name>
           <version>0</version>
-          <state>2</state>
+          <state>0</state>
         </option>
         <option>
           <name>CCGuardCalls</name>
@@ -2083,12 +2067,11 @@
         <wantNonLocal>1</wantNonLocal>
         <debug>0</debug>
         <option>
-          <name>CCOptimizationNoSizeConstraints</name>
-          <state>0</state>
-        </option>
-        <option>
           <name>CCDefines</name>
           <state>NDEBUG</state>
+          <state>USE_SWRB_TEST</state>
+          <state>USE_IAR_EWARM</state>
+          <state>DEBUG_LOG</state>
           <state>REVISION_1_2</state>
           <state>STM32F10X_HD</state>
           <state>CLOCK_HSE</state>
@@ -2155,11 +2138,11 @@
         <option>
           <name>CCAllowList</name>
           <version>1</version>
-          <state>00000000</state>
+          <state>11111110</state>
         </option>
         <option>
           <name>CCDebugInfo</name>
-          <state>1</state>
+          <state>0</state>
         </option>
         <option>
           <name>IEndianMode</name>
@@ -2253,16 +2236,16 @@
         </option>
         <option>
           <name>CCOptLevel</name>
-          <state>1</state>
+          <state>3</state>
         </option>
         <option>
           <name>CCOptStrategy</name>
           <version>0</version>
-          <state>2</state>
+          <state>0</state>
         </option>
         <option>
           <name>CCOptLevelSlave</name>
-          <state>1</state>
+          <state>3</state>
         </option>
         <option>
           <name>CompilerMisraRules98</name>
@@ -2327,13 +2310,17 @@
           <state>0</state>
         </option>
         <option>
+          <name>CCOptimizationNoSizeConstraints</name>
+          <state>0</state>
+        </option>
+        <option>
           <name>CCNoLiteralPool</name>
           <state>0</state>
         </option>
         <option>
           <name>CCOptStrategySlave</name>
           <version>0</version>
-          <state>2</state>
+          <state>0</state>
         </option>
         <option>
           <name>CCGuardCalls</name>
@@ -3033,6 +3020,9 @@
       <name>APP</name>
       <file>
         <name>$PROJ_DIR$\..\..\User\APP\SweepRobot.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\User\APP\SweepRobotTest.c</name>
       </file>
     </group>
     <group>

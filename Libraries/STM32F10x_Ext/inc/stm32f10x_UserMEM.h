@@ -12,7 +12,7 @@
 #include "stm32f10x_flash.h"
 
 #define STM32F10X_FLASH_BASE        0x08000000
-#define STM32F10X_FLASH_SIZE        0x00040000          // 256KB
+#define STM32F10X_FLASH_SIZE        0x00080000          // 512KB
 #define STM32F10X_USER_MEM_SIZE     0x800               // 2Kb per-page for HD, 1Kb for LD/MD
 #define STM32F10X_USER_MEM_BASE     (STM32F10X_FLASH_BASE+STM32F10X_FLASH_SIZE-STM32F10X_USER_MEM_SIZE)
 
@@ -23,7 +23,9 @@
 void UserMEM_Init(void);
 void UserMEM_DeInit(void);
 void UserMEM_ByteWrite(u32 addr, u8 dat);
+void UserMEM_HalfWordWrite(u32 addr, u16 dat);
 u8 UserMEM_ByteRead(u32 addr);
+u16 UserMEM_HalfWordRead(u32 addr);
 void UserMEM_EraseByte(u32 addr);
 
 #endif /* !__STM32F10X_USERMEM_H__ */

@@ -126,7 +126,7 @@
             <Oh166RecLen>16</Oh166RecLen>
           </OPTHX>
           <Simulator>
-            <UseSimulator>1</UseSimulator>
+            <UseSimulator>0</UseSimulator>
             <LoadApplicationAtStartup>1</LoadApplicationAtStartup>
             <RunToMain>1</RunToMain>
             <RestoreBreakpoints>1</RestoreBreakpoints>
@@ -138,9 +138,9 @@
             <RestoreSysVw>1</RestoreSysVw>
           </Simulator>
           <Target>
-            <UseTarget>0</UseTarget>
+            <UseTarget>1</UseTarget>
             <LoadApplicationAtStartup>1</LoadApplicationAtStartup>
-            <RunToMain>0</RunToMain>
+            <RunToMain>1</RunToMain>
             <RestoreBreakpoints>1</RestoreBreakpoints>
             <RestoreWatchpoints>1</RestoreWatchpoints>
             <RestoreMemoryDisplay>1</RestoreMemoryDisplay>
@@ -150,7 +150,7 @@
             <RestoreSysVw>1</RestoreSysVw>
           </Target>
           <RunDebugAfterBuild>0</RunDebugAfterBuild>
-          <TargetSelection>1</TargetSelection>
+          <TargetSelection>11</TargetSelection>
           <SimDlls>
             <CpuDll></CpuDll>
             <CpuDllArguments></CpuDllArguments>
@@ -164,7 +164,7 @@
             <PeripheralDll></PeripheralDll>
             <PeripheralDllArguments></PeripheralDllArguments>
             <InitializationFile></InitializationFile>
-            <Driver>BIN\AGDIRDI.DLL</Driver>
+            <Driver>STLink\ST-LINKIII-KEIL_SWO.dll</Driver>
           </TargetDlls>
         </DebugOption>
         <Utilities>
@@ -176,9 +176,9 @@
             <Capability>1</Capability>
             <DriverSelection>4096</DriverSelection>
           </Flash1>
-          <bUseTDR>0</bUseTDR>
+          <bUseTDR>1</bUseTDR>
           <Flash2>BIN\UL2CM3.DLL</Flash2>
-          <Flash3></Flash3>
+          <Flash3>"" ()</Flash3>
           <Flash4></Flash4>
           <pFcarmOut></pFcarmOut>
           <pFcarmGrp></pFcarmGrp>
@@ -371,7 +371,7 @@
             <vShortWch>0</vShortWch>
             <VariousControls>
               <MiscControls></MiscControls>
-              <Define>REVISION_1_2 NDEBUG STM32F10X_HD CLOCK_HSE USE_STDPERIPH_DRIVER KEY_PROC_WITH_REMOTE  KEY_PROC_WITH_LED</Define>
+              <Define>USE_KEIL_MDK DEBUG_LOG __USE_SWRB_TEST REVISION_1_2 NDEBUG STM32F10X_HD CLOCK_HSE USE_STDPERIPH_DRIVER KEY_PROC_WITH_REMOTE  KEY_PROC_WITH_LED</Define>
               <Undefine></Undefine>
               <IncludePath>..\..\User\APP;..\..\User\BSP\inc;..\..\User\Framework\Common\inc;..\..\User\Framework\UI;..\..\User\Framework;..\..\Libraries\CMSIS\CoreSupport;..\..\Libraries\CMSIS\Device\ST\STM32F10x\Include;..\..\Libraries\CMSIS\Device\ST\STM32F10x;..\..\Libraries\STM32F10x_Ext\inc;..\..\Libraries\STM32F10x_StdPeriph_Driver\inc;..\..\User</IncludePath>
             </VariousControls>
@@ -853,6 +853,16 @@
           </Files>
         </Group>
         <Group>
+          <GroupName>StdPeriph_Driver_Ext</GroupName>
+          <Files>
+            <File>
+              <FileName>stm32f10x_UserMEM.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Libraries\STM32F10x_Ext\src\stm32f10x_UserMEM.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
           <GroupName>User</GroupName>
           <Files>
             <File>
@@ -874,6 +884,11 @@
               <FileName>SweepRobot.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\User\APP\SweepRobot.c</FilePath>
+            </File>
+            <File>
+              <FileName>SweepRobotTest.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\APP\SweepRobotTest.c</FilePath>
             </File>
             <File>
               <FileName>BatteryManage.c</FileName>
@@ -1008,7 +1023,7 @@
                   <RVCTZI>0</RVCTZI>
                   <RVCTOtherData>0</RVCTOtherData>
                   <ModuleSelection>0</ModuleSelection>
-                  <IncludeInBuild>1</IncludeInBuild>
+                  <IncludeInBuild>2</IncludeInBuild>
                   <AlwaysBuild>2</AlwaysBuild>
                   <GenerateAssemblyFile>2</GenerateAssemblyFile>
                   <AssembleAssemblyFile>2</AssembleAssemblyFile>

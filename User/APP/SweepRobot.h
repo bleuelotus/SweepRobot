@@ -22,6 +22,7 @@ enum RobotState {
     ROBOT_STATE_IDLE,
     ROBOT_STATE_RUNNING,
     ROBOT_STATE_HOME,
+    ROBOT_STATE_TEST,
 };
 
 enum RobotWorkMode{

@@ -1664,3 +1664,69 @@ void MotionCtrl_ManualCtrlProc(enum MotionCtrlManualAct act)
     gActSequence[1].PostAct = NULL;
     MotionCtrl_Proc();
 }
+
+/* implementation for SweepRobotTest */
+#ifdef USE_SWRB_TEST
+void WheelCntMach_TestStart(void)
+{
+    WheelCntMach_Start();
+}
+
+void WheelCntMach_TestStop(void)
+{
+    WheelCntMach_Stop();
+}
+
+u16 MotionCtrl_ChanSpeedGet(u8 Wheel_Idx)
+{
+    return gDeltaWheelCnt[Wheel_Idx];
+}
+
+void MotionStateTestProc(void)
+{
+    /* Phase 1 */
+    if((++gtmpCnt)%2){
+        /* Sub Phase1 1/2 */
+        if(1==(gtmpCnt%4)){
+            /* Wheel speed adjust period 40ms
+            *  Sub Phase1/2-1/2
+            */
+            if(1==(gtmpCnt%8)){
+                gLastWheelCnt[WHEEL_IDX_L] = LWHEEL_CNT;
+                gLastWheelCnt[WHEEL_IDX_R] = RWHEEL_CNT;
+            
+            }
+            /* Sub Phase1/2-2/2 */
+            else{
+                /* Wheel speed adjust */
+                gDeltaWheelCnt[WHEEL_IDX_L] = LWHEEL_CNT - gLastWheelCnt[WHEEL_IDX_L];
+                gDeltaWheelCnt[WHEEL_IDX_R] = RWHEEL_CNT - gLastWheelCnt[WHEEL_IDX_R];
+            }
+        }
+    }
+}
+
+void IFRD_TestPathDetectStart(void)
+{
+    gtmpCnt = 0;
+    
+    TIM_SetCounter(MOTION_MONITOR_TIM, 0);
+    TIM_ITConfig(MOTION_MONITOR_TIM, TIM_IT_Update, DISABLE);
+    TIM_SetAutoreload(MOTION_MONITOR_TIM, MOTION_MONITOR_TIM_PERIOD);
+    TIM_ClearFlag(MOTION_MONITOR_TIM, TIM_FLAG_Update);
+    /* USE Test Motion State Proc */
+    plat_int_reg_cb(MOTION_MONITOR_TIM_INT_IDX, (void*)MotionStateTestProc);
+    TIM_ITConfig(MOTION_MONITOR_TIM, TIM_IT_Update, ENABLE);
+
+    TIM_Cmd(MOTION_MONITOR_TIM, ENABLE);
+}
+
+void IFRD_TestPathDetectStop(void)
+{
+    TIM_SetCounter(MOTION_MONITOR_TIM, 0);
+    TIM_Cmd(MOTION_MONITOR_TIM, DISABLE);
+
+    IFRD_TX_DISABLE();
+}
+#endif
+

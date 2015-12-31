@@ -10,16 +10,21 @@
 
 #include "Usart.h"
 
+#include "SweepRobotTest.h"
+
 #define STDIO_UART      UART4
 
 #ifdef __GNUC__
 #define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
 #define GETCHAR_PROTOTYPE int __io_getchar()
 #else
-//#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
-//#define GETCHAR_PROTOTYPE int fgetc(FILE *f)
+#ifdef USE_KEIL_MDK
+#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
+#define GETCHAR_PROTOTYPE int fgetc(FILE *f)
+#elif defined USE_IAR_EWARM
 #define PUTCHAR_PROTOTYPE int putchar(int ch)
 #define GETCHAR_PROTOTYPE int getchar(void)
+#endif
 #endif
 
 void USART1_Config(void)
@@ -89,6 +94,7 @@ void UART4_Config(void)
 {
     GPIO_InitTypeDef GPIO_InitStructure;
     USART_InitTypeDef USART_InitStructure;
+    NVIC_InitTypeDef NVIC_InitStructure;
 
     /* config UART4 clock */
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_UART4, ENABLE);
@@ -114,6 +120,17 @@ void UART4_Config(void)
     USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
     USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
     USART_Init(UART4, &USART_InitStructure);
+    
+    NVIC_InitStructure.NVIC_IRQChannel = UART4_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x03;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x02;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init(&NVIC_InitStructure);
+
+    USART_ITConfig(UART4, USART_IT_RXNE, ENABLE);
+    
+    plat_int_reg_cb(STM32F10x_INT_UART4, (void*)UART4_ISR);
+    
     USART_Cmd(UART4, ENABLE);
 }
 
