@@ -2071,6 +2071,7 @@
           <state>NDEBUG</state>
           <state>USE_SWRB_TEST</state>
           <state>USE_IAR_EWARM</state>
+          <state>DEBUG_BM</state>
           <state>DEBUG_LOG</state>
           <state>REVISION_1_2</state>
           <state>STM32F10X_HD</state>

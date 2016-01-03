@@ -401,3 +401,85 @@ void BM_Init(void)
     plat_int_reg_cb(BAT_MONITOR_TIM_INT_IDX, (void*)BM_ConditionUpdate);
     TIM_Cmd(BAT_MONITOR_TIM, ENABLE);
 }
+
+#ifdef USE_SWRB_TEST
+static u8 BM_TestChargeProc(void)
+{
+    CtrlPanel_LEDCtrl(CTRL_PANEL_LED_BLUE, LedBrightnessSch);
+    if((LedBrightnessDir > 0) && (LedBrightnessSch==10)){
+        LedBrightnessDir = -1;
+    }
+    else if((LedBrightnessDir < 0) && (LedBrightnessSch==0)){
+        LedBrightnessDir = 1;
+    }
+    LedBrightnessSch += LedBrightnessDir;
+
+    if (ADC_BatLSB[ADC_BAT_VOL] <= BAT_LEVEL_HIGH){
+        if (ADC_BatLSB[ADC_BAT_CUR] <= (BM_CHARGE_CUR_100MA)){
+            BM_ChargePowerInc();
+        }
+        else if (ADC_BatLSB[ADC_BAT_CUR] > (BM_CHARGE_CUR_100MA)){
+            BM_ChargePowerDec();
+        }
+    }
+    else if (ADC_BatLSB[ADC_BAT_VOL] < BAT_CHARGE_LEVEL_FULL){
+        if (ADC_BatLSB[ADC_BAT_CUR] <= (BM_CHARGE_CUR_600MA)){
+            BM_ChargePowerInc();
+        }
+        else if (ADC_BatLSB[ADC_BAT_CUR] > (BM_CHARGE_CUR_600MA)){
+            BM_ChargePowerDec();
+        }
+    }
+    else{
+        BM_ChargePowerDec();
+    }
+    return 0;
+}
+
+void BM_TestConditionUpdate(void)
+{
+    u8      i = 0;
+
+    for(i = 0; i < ADC_BAT_SAMPLE_AVE_CNT-1; i++){
+        TempADC[ADC_BAT_VOL][i] = TempADC[ADC_BAT_VOL][i+1];
+        TempADC[ADC_BAT_CUR][i] = TempADC[ADC_BAT_CUR][i+1];
+        TempADC[ADC_VREFIN][i] = TempADC[ADC_VREFIN][i+1];
+    }
+
+    TempADC[ADC_BAT_VOL][ADC_BAT_SAMPLE_AVE_CNT-1] = ADCConvertedLSB[MEAS_CHAN_BAT_VOL-1];
+    TempADC[ADC_BAT_CUR][ADC_BAT_SAMPLE_AVE_CNT-1] = ADCConvertedLSB[MEAS_CHAN_BAT_CHARGE_CUR-1];
+    TempADC[ADC_VREFIN][ADC_BAT_SAMPLE_AVE_CNT-1] = ADCConvertedLSB[MEAS_CHAN_VREFIN-1];
+
+    if(BM_StateInited < ADC_BAT_SAMPLE_AVE_CNT){
+        BM_StateInited++;
+        return;
+    }
+
+    ADC_BatLSB[ADC_BAT_VOL] = 0;
+    ADC_BatLSB[ADC_BAT_CUR] = 0;
+    ADC_BatLSB[ADC_VREFIN] = 0;
+    for(i = 0; i < ADC_BAT_SAMPLE_AVE_CNT; i++){
+        ADC_BatLSB[ADC_BAT_VOL] += TempADC[ADC_BAT_VOL][i];
+        ADC_BatLSB[ADC_BAT_CUR] += TempADC[ADC_BAT_CUR][i];
+        ADC_BatLSB[ADC_VREFIN] += TempADC[ADC_VREFIN][i];
+    }
+
+    ADC_BatLSB[ADC_BAT_VOL] /= ADC_BAT_SAMPLE_AVE_CNT;
+    ADC_BatLSB[ADC_BAT_CUR] /= ADC_BAT_SAMPLE_AVE_CNT;
+    ADC_BatLSB[ADC_VREFIN] /= ADC_BAT_SAMPLE_AVE_CNT;
+
+    BM_CHARGE_CUR_50MA               = ADC_BatLSB[ADC_VREFIN]/48;
+    BM_CHARGE_CUR_100MA              = ADC_BatLSB[ADC_VREFIN]/24;
+    BM_CHARGE_CUR_600MA              = ADC_BatLSB[ADC_VREFIN]/4;
+    BM_CHARGE_CUR_1000MA             = ADC_BatLSB[ADC_VREFIN]*5/12;
+
+    BAT_LEVEL_LOW                    = ADC_BatLSB[ADC_VREFIN]*9/5;
+    BAT_LEVEL_HIGH                   = ADC_BatLSB[ADC_VREFIN]*17/9;
+    BAT_LEVEL_FULL                   = ADC_BatLSB[ADC_VREFIN]*20/9;
+    BAT_CHARGE_LEVEL_FULL            = ADC_BatLSB[ADC_VREFIN]*9/4;
+    
+    if(IS_CHARGE_CONNECTED()){
+        BM_TestChargeProc();
+    }
+}
+#endif

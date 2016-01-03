@@ -6,6 +6,7 @@
 * Description        : Sweeping Robot Test
 *******************************************************************************/
 #include "SweepRobotTest.h"
+#include "stm32f10x_it.h"
 
 #include "MotorCtrl.h"
 #include "delay.h"
@@ -67,17 +68,16 @@ static s8 LedBrightnessSch = 0, LedBrightnessDir = 1;
 static u16 TempADC[ADC_BAT_CHANNEL_NUM][ADC_BAT_SAMPLE_AVE_CNT] = {0};
 static u8 BM_StateInited = 0;
 static u32 ADC_BatLSB[ADC_BAT_CHANNEL_NUM] = {0};
-#define ADC_BAT_VOL                         0
-#define ADC_BAT_CUR                         1
-#define ADC_BAT_INTVOL                      2
+
+enum ADC_BAT_CHAN{
+    ADC_BAT_VOL,
+    ADC_BAT_CUR,
+    ADC_BAT_INTVOL,
+};
 #define BM_CHARGE_CUR_50MA                  0.025f
 #define BM_CHARGE_CUR_100MA                 0.05f
 #define BM_CHARGE_CUR_600MA                 0.3f
 #define BM_CHARGE_CUR_1000MA                0.5f
-static const float BAT_LEVEL_LOW = 2.16f;
-static const float BAT_LEVEL_HIGH = 2.27f;
-static const float BAT_LEVEL_FULL = 2.67f;
-static const float BAT_CHARGE_LEVEL_FULL = 2.72f;
 static float ADC2Value_BatLSB[ADC_BAT_CHANNEL_NUM] = {0.f};
 
 u16 UsartRxState = 0;
@@ -88,70 +88,23 @@ static int UsartRxCmdParaBuf;
 
 void USART_TestCtrlCmdSend(enum USARTTestCtrlCmd cmd, enum USARTTestCtrlCmdAct cmd_act, int cmd_para);
 
-extern void BM_ChargeTestProc(void);
 extern void BM_ConditionUpdate(void);
+extern void BM_TestConditionUpdate(void);
 extern s8 BM_ChargePowerInc(void);
 extern s8 BM_ChargePowerDec(void);
 
+extern void WheelCntMach_TestStart(void);
+extern void WheelCntMach_TestStop(void);
+extern void IFRD_TestPathDetectStart(void);
+extern void IFRD_TestPathDetectStop(void);
+extern u16 MotionCtrl_ChanSpeedGet(u8 Wheel_Idx);
+
+
 /* TEST BM process */
-void BM_ChargeTestProc(void)
-{
-    u8      i = 0;
-    
-    if(IS_CHARGE_CONNECTED()){
-        CtrlPanel_LEDCtrl(CTRL_PANEL_LED_BLUE, LedBrightnessSch);
-        if((LedBrightnessDir > 0) && (LedBrightnessSch==10)){
-            LedBrightnessDir = -1;
-        }
-        else if((LedBrightnessDir < 0) && (LedBrightnessSch==0)){
-            LedBrightnessDir = 1;
-        }
-        LedBrightnessSch += LedBrightnessDir;
-    }
-
-    for(i = 0; i < ADC_BAT_SAMPLE_AVE_CNT-1; i++){
-        TempADC[ADC_BAT_VOL][i] = TempADC[ADC_BAT_VOL][i+1];
-        TempADC[ADC_BAT_CUR][i] = TempADC[ADC_BAT_CUR][i+1];
-        TempADC[ADC_BAT_INTVOL][i] = TempADC[ADC_BAT_INTVOL][i+1];
-    }
-
-    TempADC[ADC_BAT_VOL][ADC_BAT_SAMPLE_AVE_CNT-1] = ADCConvertedLSB[MEAS_CHAN_BAT_VOL-1];
-    TempADC[ADC_BAT_CUR][ADC_BAT_SAMPLE_AVE_CNT-1] = ADCConvertedLSB[MEAS_CHAN_BAT_CHARGE_CUR-1];
-    TempADC[ADC_BAT_INTVOL][ADC_BAT_SAMPLE_AVE_CNT-1] = ADCConvertedLSB[MEAS_CHAN_VREFIN-1];
-
-    if(BM_StateInited < ADC_BAT_SAMPLE_AVE_CNT){
-        BM_StateInited++;
-        return;
-    }
-
-    ADC_BatLSB[ADC_BAT_VOL] = 0;
-    ADC_BatLSB[ADC_BAT_CUR] = 0;
-    ADC_BatLSB[ADC_BAT_INTVOL] = 0;
-    for(i = 0; i < ADC_BAT_SAMPLE_AVE_CNT; i++){
-        ADC_BatLSB[ADC_BAT_VOL] += TempADC[ADC_BAT_VOL][i];
-        ADC_BatLSB[ADC_BAT_CUR] += TempADC[ADC_BAT_CUR][i];
-        ADC_BatLSB[ADC_BAT_INTVOL] += TempADC[ADC_BAT_INTVOL][i];
-    }
-
-    ADC_BatLSB[ADC_BAT_VOL] /= ADC_BAT_SAMPLE_AVE_CNT;
-    ADC_BatLSB[ADC_BAT_CUR] /= ADC_BAT_SAMPLE_AVE_CNT;
-    ADC_BatLSB[ADC_BAT_INTVOL] /= ADC_BAT_SAMPLE_AVE_CNT;
-
-    ADC2Value_BatLSB[ADC_BAT_VOL] = 1.2f*((float)ADC_BatLSB[ADC_BAT_VOL]/(float)ADC_BatLSB[ADC_BAT_INTVOL]);
-    ADC2Value_BatLSB[ADC_BAT_CUR] = 1.2f*((float)ADC_BatLSB[ADC_BAT_CUR]/(float)ADC_BatLSB[ADC_BAT_INTVOL]);
-
-    if(IS_CHARGE_CONNECTED()){
-        if (ADC2Value_BatLSB[ADC_BAT_CUR] <= (BM_CHARGE_CUR_100MA-0.0025)){
-            BM_ChargePowerInc();
-        }else if (ADC2Value_BatLSB[ADC_BAT_CUR] > (BM_CHARGE_CUR_100MA+0.0025)){
-            BM_ChargePowerDec();
-        }
-    }
-}
-
 void BM_ChargeTestStart(USARTTestCtrlData_t *testCtrlData)
 {
-    plat_int_reg_cb(BAT_MONITOR_TIM_INT_IDX, (void*)BM_ChargeTestProc);
+    TIM_ClearFlag(BAT_MONITOR_TIM, TIM_IT_Update);
+    plat_int_reg_cb(BAT_MONITOR_TIM_INT_IDX, (void*)BM_TestConditionUpdate);
     TIM_Cmd(BAT_MONITOR_TIM, ENABLE);
     if(testCtrlData->Cmd_Para){
         PWM_DutyCycleSet(PWM_CHAN_CHARGE, testCtrlData->Cmd_Para);
@@ -160,9 +113,9 @@ void BM_ChargeTestStart(USARTTestCtrlData_t *testCtrlData)
 
 void BM_ChargeTestStop(void)
 {
-    TIM_Cmd(BAT_MONITOR_TIM, DISABLE);
     PWM_DutyCycleSet(PWM_CHAN_CHARGE, 0);
-    plat_int_reg_cb(BAT_MONITOR_TIM_INT_IDX, (void*)BM_ConditionUpdate);
+    TIM_Cmd(BAT_MONITOR_TIM, DISABLE);
+    TIM_ClearFlag(BAT_MONITOR_TIM, TIM_IT_Update);
     CtrlPanel_LEDCtrl(CTRL_PANEL_LED_BLUE, CTRL_PANEL_LED_BR_LVL);
 }
 
@@ -521,6 +474,8 @@ static void SweepRobotTest_CtrlMsgTestOnProc(void)
 {
     gRobotState = ROBOT_STATE_TEST;
     TIM_Cmd(BAT_MONITOR_TIM, DISABLE);
+    TIM_ClearFlag(BAT_MONITOR_TIM, TIM_IT_Update);
+    plat_int_reg_cb(BAT_MONITOR_TIM_INT_IDX, (void*)BM_TestConditionUpdate);
     WheelCntMach_TestStart();
     IFRD_TestPathDetectStart();
     MotorCtrl_ChanSpeedLevelSet(MOTOR_CTRL_CHAN_FAN,    0);
@@ -528,12 +483,14 @@ static void SweepRobotTest_CtrlMsgTestOnProc(void)
     MotorCtrl_ChanSpeedLevelSet(MOTOR_CTRL_CHAN_LBRUSH, 0);
     MotorCtrl_ChanSpeedLevelSet(MOTOR_CTRL_CHAN_RBRUSH, 0);
     CtrlPanel_LEDCtrl(CTRL_PANEL_LED_BLUE, CTRL_PANEL_LED_BR_LVL);
+        
 }
 
 static void SweepRobotTest_CtrlMsgTestOffProc(void)
 {
     gRobotState = ROBOT_STATE_IDLE;
     BM_ChargeTestStop();
+    plat_int_reg_cb(BAT_MONITOR_TIM_INT_IDX, (void*)BM_ConditionUpdate);
     TIM_Cmd(BAT_MONITOR_TIM, ENABLE);
     WheelCntMach_TestStop();
     IFRD_TestPathDetectStop();
@@ -596,6 +553,8 @@ static void SweepRobotTest_CtrlMsgManulReadProc(void)
         }else{
             printf("%d,", aSwrbTestData[i]);
         }
+        
+        aSwrbTestData[i] = 0;
     }
     
     for(i=IRDA_BACK_LIGHT;i<IRDA_LIGHT_NUM;i++)
@@ -765,6 +724,7 @@ static void SweepRobotTest_CtrlMsgIrDAOnProc(void)
 
 static void SweepRobotTest_CtrlMsgIrDAOffProc(void)
 {
+    PWM_DutyCycleSet(PWM_CHAN_CHARGE, 0);
     TIM_Cmd(BAT_MONITOR_TIM, DISABLE);
     TIM_SetCounter(BAT_MONITOR_TIM, 0);
 }

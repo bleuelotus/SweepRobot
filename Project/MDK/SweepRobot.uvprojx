@@ -371,7 +371,7 @@
             <vShortWch>0</vShortWch>
             <VariousControls>
               <MiscControls></MiscControls>
-              <Define>USE_KEIL_MDK DEBUG_LOG __USE_SWRB_TEST REVISION_1_2 NDEBUG STM32F10X_HD CLOCK_HSE USE_STDPERIPH_DRIVER KEY_PROC_WITH_REMOTE  KEY_PROC_WITH_LED</Define>
+              <Define>USE_KEIL_MDK DEBUG_LOG USE_SWRB_TEST REVISION_1_2 NDEBUG STM32F10X_HD CLOCK_HSE USE_STDPERIPH_DRIVER KEY_PROC_WITH_REMOTE  KEY_PROC_WITH_LED</Define>
               <Undefine></Undefine>
               <IncludePath>..\..\User\APP;..\..\User\BSP\inc;..\..\User\Framework\Common\inc;..\..\User\Framework\UI;..\..\User\Framework;..\..\Libraries\CMSIS\CoreSupport;..\..\Libraries\CMSIS\Device\ST\STM32F10x\Include;..\..\Libraries\CMSIS\Device\ST\STM32F10x;..\..\Libraries\STM32F10x_Ext\inc;..\..\Libraries\STM32F10x_StdPeriph_Driver\inc;..\..\User</IncludePath>
             </VariousControls>
