@@ -480,6 +480,8 @@ void BM_TestConditionUpdate(void)
     
     if(IS_CHARGE_CONNECTED()){
         BM_TestChargeProc();
+    }else{
+        PWM_DutyCycleSet(PWM_CHAN_CHARGE, 0);
     }
 }
 #endif
