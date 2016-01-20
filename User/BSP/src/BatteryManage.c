@@ -405,7 +405,7 @@ void BM_Init(void)
 #ifdef USE_SWRB_TEST
 static u8 BM_TestChargeProc(void)
 {
-    CtrlPanel_LEDCtrl(CTRL_PANEL_LED_BLUE, LedBrightnessSch);
+    CtrlPanel_LEDCtrl(CTRL_PANEL_LED_RED, LedBrightnessSch);
     if((LedBrightnessDir > 0) && (LedBrightnessSch==10)){
         LedBrightnessDir = -1;
     }

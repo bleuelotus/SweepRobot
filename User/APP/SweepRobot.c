@@ -121,7 +121,9 @@ void SweepRobot_Start(void)
 
     if(RobotPlanFlag & RTC_ALR_WAKE_MASK){
         RobotPlanFlag &= ~RTC_ALR_WAKE_MASK;
-        Buzzer_Play(BUZZER_ONE_PULS, BUZZER_SND_VERY_LONG);
+        if(!PM_WAKEUP_PIN_SIGN()){
+          Buzzer_Play(BUZZER_ONE_PULS, BUZZER_SND_VERY_LONG);
+        }
     }
 
     if(RobotPlanFlag & RTC_ALR_PLAN_MASK){
@@ -176,7 +178,7 @@ void SweepRobot_Start(void)
                                 SweepRobotTest_StartCtrlMsgPorc(&MainMsgQ->Msg.Data.TestCtrlDat);
                                 break;
                         }
-                    }else{                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+                    }else{
                         switch(MainMsgQ->Msg.type){
                             case MSG_TYPE_CTRL:
                                 SweepRobotTest_IrDARxCodeProc(&MainMsgQ->Msg.Data.PSSigDat);

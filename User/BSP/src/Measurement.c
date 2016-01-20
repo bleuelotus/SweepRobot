@@ -119,7 +119,7 @@ void Meas_Init(void)
     ADC_RegularChannelConfig(ADC1, ADC_Channel_13,  MEAS_CHAN_BAT_VOL,              ADC_SampleTime_7Cycles5);
     ADC_RegularChannelConfig(ADC1, ADC_Channel_14,  MEAS_CHAN_ASH_TRAY_LVL,         ADC_SampleTime_7Cycles5);
 #ifdef REVISION_1_2
-    ADC_RegularChannelConfig(ADC1, ADC_Channel_17,  MEAS_CHAN_VREFIN,               ADC_SampleTime_7Cycles5);
+    ADC_RegularChannelConfig(ADC1, ADC_Channel_17,  MEAS_CHAN_VREFIN,               ADC_SampleTime_41Cycles5);
     /* Enable interal Vref */
     ADC_TempSensorVrefintCmd(ENABLE);
 #endif

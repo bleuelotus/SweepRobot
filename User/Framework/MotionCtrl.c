@@ -170,7 +170,7 @@ u8 ExceptionStateCheck(void)
     _ADCRefVal = ADCConvertedLSB[MEAS_CHAN_VREFIN-1];
 #endif
 
-    /* Update exception sign: left, right, middle brush over loading, wheel floationg and ash tray exist or not */
+    /* Update exception sign: left, right, middle brush over loading, wheel floating and ash tray exist or not */
     ExceptionMask |= (((gPathCondMap & PATH_FAULT_BOTTOM_MASK)==PATH_FAULT_BOTTOM_MASK) ? 1 : 0) << EXCEPTION_MASK_WHEEL_FLOAT_POS;
     ExceptionMask |= (((gPathCondMap & PATH_FAULT_BOTTOM_SIDE_MASK)==PATH_FAULT_BOTTOM_SIDE_MASK) ? 1 : 0) << EXCEPTION_MASK_WHEEL_FLOAT_POS;
     ExceptionMask |= ((LWHEEL_FLOAT_SIGN && (gPathCondMap & PATH_FAULT_BOTTOM_SIDE_L_MASK)) ? 1 : 0) << EXCEPTION_MASK_WHEEL_FLOAT_POS;
@@ -1694,7 +1694,6 @@ void MotionStateTestProc(void)
             if(1==(gtmpCnt%8)){
                 gLastWheelCnt[WHEEL_IDX_L] = LWHEEL_CNT;
                 gLastWheelCnt[WHEEL_IDX_R] = RWHEEL_CNT;
-            
             }
             /* Sub Phase1/2-2/2 */
             else{
@@ -1703,13 +1702,15 @@ void MotionStateTestProc(void)
                 gDeltaWheelCnt[WHEEL_IDX_R] = RWHEEL_CNT - gLastWheelCnt[WHEEL_IDX_R];
             }
         }
+    }else{
+      
     }
 }
 
 void IFRD_TestPathDetectStart(void)
 {
     gtmpCnt = 0;
-    
+
     TIM_SetCounter(MOTION_MONITOR_TIM, 0);
     TIM_ITConfig(MOTION_MONITOR_TIM, TIM_IT_Update, DISABLE);
     TIM_SetAutoreload(MOTION_MONITOR_TIM, MOTION_MONITOR_TIM_PERIOD);

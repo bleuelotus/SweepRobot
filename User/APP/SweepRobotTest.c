@@ -36,6 +36,8 @@
 #define KEY_SIGN            GPIO_ReadInputDataBit(CTRL_BTN_ALL_IN_ONE_GPIO, CTRL_BTN_ALL_IN_ONE_PIN)
 #define CHARGE_24V_SIGN     GPIO_ReadInputDataBit(BM_CHARGE_SW_STATUS_GPIO, BM_CHARGE_SW_STATUS_PIN)
 
+#define IS_CHARGE_CONNECTED()               GPIO_ReadInputDataBit(BM_CHARGE_SW_STATUS_GPIO, BM_CHARGE_SW_STATUS_PIN)
+
 #define ADC_BAT_SAMPLE_AVE_CNT              5
 #define ADC_BAT_CHANNEL_NUM                 3
 
@@ -483,12 +485,16 @@ static void SweepRobotTest_CtrlMsgTestOnProc(void)
     MotorCtrl_ChanSpeedLevelSet(MOTOR_CTRL_CHAN_LBRUSH, 0);
     MotorCtrl_ChanSpeedLevelSet(MOTOR_CTRL_CHAN_RBRUSH, 0);
     CtrlPanel_LEDCtrl(CTRL_PANEL_LED_BLUE, CTRL_PANEL_LED_BR_LVL);
-        
 }
 
 static void SweepRobotTest_CtrlMsgTestOffProc(void)
 {
-    gRobotState = ROBOT_STATE_IDLE;
+    if(IS_CHARGE_CONNECTED()){
+      gBM_Cond.LastState = BAT_STATE_DISCHARGING;
+      gRobotState = ROBOT_STATE_HOME;
+    }else{
+      gRobotState = ROBOT_STATE_IDLE;
+    }
     BM_ChargeTestStop();
     plat_int_reg_cb(BAT_MONITOR_TIM_INT_IDX, (void*)BM_ConditionUpdate);
     TIM_Cmd(BAT_MONITOR_TIM, ENABLE);
@@ -524,7 +530,7 @@ static void SweepRobotTest_CtrlMsgManulReadProc(void)
     aSwrbTestData[SWRB_TEST_DATA_IFRD_B_SL_POS] = ADCConvertedLSB[MEAS_CHAN_IFRD_BOTTOM_RX_L-1];
     aSwrbTestData[SWRB_TEST_DATA_IFRD_B_SR_POS] = ADCConvertedLSB[MEAS_CHAN_IFRD_BOTTOM_RX_R-1];
     AD_CHAN_TDM_SW_ON();
-    
+
     aSwrbTestData[SWRB_TEST_DATA_COLLISION_L_POS] = COLLISION_SIGN_LEFT;
     aSwrbTestData[SWRB_TEST_DATA_COLLISION_FL_POS] = COLLISION_SIGN_FL;
 
@@ -890,6 +896,7 @@ static void SweepRobotTest_CtrlMsgSensorReadProc(USARTTestCtrlData_t *TestCtrlDa
 }
 
 /* XXX: READ and WRITE BkpRegister to save Serial number */
+
 //static void SweepRobotTest_CtrlMsgSNReadBkpRegProc(uint16_t bkp_reg)
 //{
 //    printf("%d\r\n", BKP_ReadBackupRegister(bkp_reg) );
@@ -926,7 +933,7 @@ static void SweepRobotTest_CtrlMsgSNWriteFlashProc(u32 addr, USARTTestCtrlData_t
     UserMEM_DeInit();
 }
 
-static void SweepRobotTest_CtrlMsgSNEraseFlashPageProc(u32 addr)
+static void SweepRobotTest_CtrlMsgSNEraseFlashPageEraseProc(u32 addr)
 {
     UserMEM_Init();
     UserMEM_EraseByte(addr);
@@ -947,6 +954,22 @@ void SweepRobotTest_StartCtrlMsgPorc(USARTTestCtrlData_t *TestCtrlDat)
             break;
         case TEST_CTRL_CMD_SN_READ:
             switch(TestCtrlDat->Cmd_Act){
+                case TEST_CTRL_CMD_ACT_YEAR:
+//                    SweepRobotTest_CtrlMsgSNReadBkpRegProc(SWRB_TEST_SN_YEAR_REG);
+                    SweepRobotTest_CtrlMsgSNReadFlashProc(SWRB_TEST_SN_YEAR_FLASH_ADDR);
+                    break;
+                case TEST_CTRL_CMD_ACT_MONTH:
+//                    SweepRobotTest_CtrlMsgSNReadBkpRegProc(SWRB_TEST_SN_MONTH_REG);
+                    SweepRobotTest_CtrlMsgSNReadFlashProc(SWRB_TEST_SN_MONTH_FLASH_ADDR);
+                    break;
+                case TEST_CTRL_CMD_ACT_DATE:
+//                    SweepRobotTest_CtrlMsgSNReadBkpRegProc(SWRB_TEST_SN_DATE_REG);
+                    SweepRobotTest_CtrlMsgSNReadFlashProc(SWRB_TEST_SN_DATE_FLASH_ADDR);
+                    break;
+                case TEST_CTRL_CMD_ACT_SN:
+//                    SweepRobotTest_CtrlMsgSNReadBkpRegProc(SWRB_TEST_SN_SNUM_REG);
+                    SweepRobotTest_CtrlMsgSNReadFlashProc(SWRB_TEST_SN_SNUM_FLASH_ADDR);
+                    break;
                 case TEST_CTRL_CMD_ACT_ALL:
 //                    SweepRobotTest_CtrlMsgSNReadAllBkpRegProc();
                     SweepRobotTest_CtrlMsgSNReadAllFlashProc();
@@ -1268,7 +1291,7 @@ void SweepRobotTest_CtrlMsgProc(USARTTestCtrlData_t *TestCtrlDat)
                     SweepRobotTest_CtrlMsgSNWriteFlashProc(SWRB_TEST_SN_SNUM_FLASH_ADDR, TestCtrlDat);
                     break;
                 case TEST_CTRL_CMD_ACT_ERASE:
-                    SweepRobotTest_CtrlMsgSNEraseFlashPageProc(SWRB_TEST_SN_FLASH_PAGE);
+                    SweepRobotTest_CtrlMsgSNEraseFlashPageEraseProc(SWRB_TEST_SN_FLASH_PAGE);
                     break;
                 default:break;
             }

@@ -49,6 +49,9 @@ s8 PM_SysTryToResume(void)
         if(flag){
             break;
         }
+        if(PM_WAKEUP_PIN_SIGN()){
+            return 1;
+        }
         uDelay(500);
     }
     if(AliveCnt < 0){
@@ -58,6 +61,9 @@ s8 PM_SysTryToResume(void)
     AliveCnt = 150;
     while(AliveCnt--){
         if( IrDA_FrameBuf==REMOTE_CMD_WAKEUP ){
+            return 1;
+        }
+        if(PM_WAKEUP_PIN_SIGN()){
             return 1;
         }
         mDelay(1);

@@ -43,7 +43,13 @@ extern u8 gSystemIdleCnt;
 #define POWER_SUPPLY_CTRL_GPIO              GPIOA
 #define POWER_SUPPLY_CTRL_PIN               GPIO_Pin_9
 
+#define POWER_WAKE_UP_CTRL_GPIO_PERIPH_ID   RCC_APB2Periph_GPIOA
+#define POWER_WAKE_UP_CTRL_GPIO             GPIOA
+#define POWER_WAKE_UP_CTRL_PIN              GPIO_Pin_0
+
+
 #define PM_POWER_SUPPLY_CTRL(s)             GPIO_WriteBit(POWER_SUPPLY_CTRL_GPIO, POWER_SUPPLY_CTRL_PIN, (BitAction)s)
+#define PM_WAKEUP_PIN_SIGN()                GPIO_ReadInputDataBit(POWER_WAKE_UP_CTRL_GPIO, POWER_WAKE_UP_CTRL_PIN)
 
 #define PM_ResetSysIdleState()              do{gSystemIdleCnt=PM_SYS_SB_SEC;}while(0);
 
