@@ -523,13 +523,13 @@ static void SweepRobotTest_CtrlMsgManulReadProc(void)
 
     aSwrbTestData[SWRB_TEST_DATA_IFRD_L_POS] = ADCConvertedLSB[MEAS_CHAN_IFRD_SIDE_RX_L-1];
     aSwrbTestData[SWRB_TEST_DATA_IFRD_R_POS] = ADCConvertedLSB[MEAS_CHAN_IFRD_SIDE_RX_R-1];
-    aSwrbTestData[SWRB_TEST_DATA_IFRD_B_SL_POS] = ADCConvertedLSB[MEAS_CHAN_IFRD_BOTTOM_RX_L-1];
-    aSwrbTestData[SWRB_TEST_DATA_IFRD_B_FR_POS] = ADCConvertedLSB[MEAS_CHAN_IFRD_BOTTOM_RX_R-1];
-    AD_CHAN_TDM_SW_OFF();
-    uDelay(100);
     aSwrbTestData[SWRB_TEST_DATA_IFRD_B_FL_POS] = ADCConvertedLSB[MEAS_CHAN_IFRD_BOTTOM_RX_L-1];
-    aSwrbTestData[SWRB_TEST_DATA_IFRD_B_SR_POS] = ADCConvertedLSB[MEAS_CHAN_IFRD_BOTTOM_RX_R-1];
+    aSwrbTestData[SWRB_TEST_DATA_IFRD_B_FR_POS] = ADCConvertedLSB[MEAS_CHAN_IFRD_BOTTOM_RX_R-1];
     AD_CHAN_TDM_SW_ON();
+    uDelay(100);
+    aSwrbTestData[SWRB_TEST_DATA_IFRD_B_SL_POS] = ADCConvertedLSB[MEAS_CHAN_IFRD_BOTTOM_RX_L-1];
+    aSwrbTestData[SWRB_TEST_DATA_IFRD_B_SR_POS] = ADCConvertedLSB[MEAS_CHAN_IFRD_BOTTOM_RX_R-1];
+    AD_CHAN_TDM_SW_OFF();
 
     aSwrbTestData[SWRB_TEST_DATA_COLLISION_L_POS] = COLLISION_SIGN_LEFT;
     aSwrbTestData[SWRB_TEST_DATA_COLLISION_FL_POS] = COLLISION_SIGN_FL;
@@ -569,7 +569,7 @@ static void SweepRobotTest_CtrlMsgManulReadProc(void)
     for(i=IRDA_BACK_LIGHT;i<IRDA_LIGHT_NUM;i++)
         gSwrbTestIrDARxCode[i] = 0;
 
-    printf("\r\n");
+    printf("\r\n");              
 }
 
 static void SweepRobotTest_CtrlMsgWheelDirProc(USARTTestCtrlData_t *TestCtrlDat)
@@ -768,7 +768,7 @@ void SweepRobotTest_IrDARxCodeProc(PwrStationSigData_t *PwrSig)
 static void SweepRobotTest_CtrlMsgBuzzerOnProc(USARTTestCtrlData_t *TestCtrlDat)
 {
     switch(TestCtrlDat->Cmd_Para){
-        case BUZZER_ONE_PULS:
+        case BUZZER_ONE_PULS:  
             Buzzer_Play(BUZZER_ONE_PULS, BUZZER_SND_SHORT);
             break;
         case BUZZER_TWO_PULS:
@@ -896,7 +896,6 @@ static void SweepRobotTest_CtrlMsgSensorReadProc(USARTTestCtrlData_t *TestCtrlDa
 }
 
 /* XXX: READ and WRITE BkpRegister to save Serial number */
-
 //static void SweepRobotTest_CtrlMsgSNReadBkpRegProc(uint16_t bkp_reg)
 //{
 //    printf("%d\r\n", BKP_ReadBackupRegister(bkp_reg) );

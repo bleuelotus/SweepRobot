@@ -170,7 +170,7 @@ void SweepRobot_Start(void)
                                 PM_ResetSysIdleState();
     #ifdef DEBUG_LOG
                                 printf("MOTION msg 0x%X.\r\n", MainMsgQ->Msg.Data.MEvt);
-    #endif
+    #endif                            
                                 SweepRobot_MotionMsgProc(MainMsgQ->Msg.Data.MEvt);
                                 break;
                             case MSG_TYPE_TEST_CTRL:
