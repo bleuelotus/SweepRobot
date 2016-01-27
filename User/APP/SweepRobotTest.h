@@ -4,6 +4,9 @@
 #include "stm32f10x.h"
 #include "IrDA.h"
 
+#define PM_SYS_TEST_SB_SEC                  120
+#define PM_ResetSysTestState()              do{gSystemIdleCnt=PM_SYS_TEST_SB_SEC;}while(0);
+
 enum SWRB_TEST_DATA_POS{
     
     SWRB_TEST_DATA_WHEEL_L_SPEED_POS,
@@ -95,6 +98,7 @@ enum USARTTestCtrlCmdAct {
     
     TEST_CTRL_CMD_ACT_ON,
     TEST_CTRL_CMD_ACT_OFF,
+    TEST_CTRL_CMD_ACT_SLEEP,
     TEST_CTRL_CMD_ACT_START,
     TEST_CTRL_CMD_ACT_STOP,
     TEST_CTRL_CMD_ACT_READ,

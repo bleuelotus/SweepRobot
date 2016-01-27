@@ -65,22 +65,11 @@ static uint16_t aSwrbTestData[SWRB_TEST_DATA_BOUND] = { 0 };
 
 static u8 gSwrbTestIrDARxCode[IRDA_LIGHT_NUM] = {0x00};
 
-static s8 LedBrightnessSch = 0, LedBrightnessDir = 1;
-
-static u16 TempADC[ADC_BAT_CHANNEL_NUM][ADC_BAT_SAMPLE_AVE_CNT] = {0};
-static u8 BM_StateInited = 0;
-static u32 ADC_BatLSB[ADC_BAT_CHANNEL_NUM] = {0};
-
 enum ADC_BAT_CHAN{
     ADC_BAT_VOL,
     ADC_BAT_CUR,
     ADC_BAT_INTVOL,
 };
-#define BM_CHARGE_CUR_50MA                  0.025f
-#define BM_CHARGE_CUR_100MA                 0.05f
-#define BM_CHARGE_CUR_600MA                 0.3f
-#define BM_CHARGE_CUR_1000MA                0.5f
-static float ADC2Value_BatLSB[ADC_BAT_CHANNEL_NUM] = {0.f};
 
 u16 UsartRxState = 0;
 static char UsartRxCmdBuf[STDIO_UART_RX_CMD_BUF_LEN];
@@ -88,7 +77,11 @@ static char UsartRxCmdActBuf[STDIO_UART_RX_CMD_ACT_BUF_LEN];
 static u16 UsartRxCmdLen, UsartRxCmdActLen;
 static int UsartRxCmdParaBuf;
 
-void USART_TestCtrlCmdSend(enum USARTTestCtrlCmd cmd, enum USARTTestCtrlCmdAct cmd_act, int cmd_para);
+static char *UsartRxCmdStrBuf;
+static char *UsartRxCmdActStrBuf;
+
+static void USART_CmdBufClearProc(void);
+static void USART_TestCtrlCmdSend(enum USARTTestCtrlCmd cmd, enum USARTTestCtrlCmdAct cmd_act, int cmd_para);
 
 extern void BM_ConditionUpdate(void);
 extern void BM_TestConditionUpdate(void);
@@ -125,13 +118,13 @@ void BM_ChargeTestStop(void)
 void UART4_ISR(void)
 {
     u8 ch;
-    
+
     if(USART_GetITStatus(STDIO_UART, USART_IT_RXNE) != RESET){
         ch = USART_ReceiveData(STDIO_UART);
         if( !(UsartRxState & (1<<USART_RX_STATE_REC_FINISH_POS) ) ){
-            if( UsartRxState & (1<<USART_RX_STATE_CR_REC_POS) ){
+             if( UsartRxState & (1<<USART_RX_STATE_CR_REC_POS) ){
                 if(ch != '\n')
-                    UsartRxState = 0;
+                    USART_CmdBufClearProc();
                 else{
                     UsartRxState |= (1<<USART_RX_STATE_REC_FINISH_POS);
                 }
@@ -156,11 +149,11 @@ void UART4_ISR(void)
                                     UsartRxState++;
                                     UsartRxCmdLen = UsartRxState&USART_RX_STATE_CNT_MASK;
                                     if( (UsartRxState&USART_RX_STATE_CNT_MASK) >  STDIO_UART_RX_CMD_BUF_LEN){
-                                        UsartRxState = 0;
+                                        USART_CmdBufClearProc();
                                         return;
                                     }
                                 }else{
-                                    UsartRxState = 0;
+                                    USART_CmdBufClearProc();
                                     return;
                                 }
                             }else{
@@ -168,7 +161,7 @@ void UART4_ISR(void)
                                     UsartRxState |= (1<<USART_RX_STATE_CMD_ACT_REC_EN_POS);
                                     UsartRxState &= USART_RX_STATE_CNT_CLR_MASK;
                                 }else{
-                                    UsartRxState = 0;
+                                    USART_CmdBufClearProc();
                                     return;
                                 }
                             }
@@ -178,11 +171,11 @@ void UART4_ISR(void)
                                 UsartRxState++;
                                 UsartRxCmdActLen = UsartRxState&USART_RX_STATE_CNT_MASK;
                                 if( (UsartRxState&USART_RX_STATE_CNT_MASK) >  STDIO_UART_RX_CMD_BUF_LEN){
-                                    UsartRxState = 0;
+                                    USART_CmdBufClearProc();
                                     return;
                                 }
                             }else{
-                                UsartRxState = 0;
+                                USART_CmdBufClearProc();
                                 return;
                             }
                         }
@@ -194,7 +187,7 @@ void UART4_ISR(void)
                             UsartRxCmdParaBuf += (ch - '0');
                             UsartRxState++;
                         }else{
-                            UsartRxState = 0;
+                            USART_CmdBufClearProc();
                             return;
                         }
                     }
@@ -207,19 +200,27 @@ void UART4_ISR(void)
 s8 USART_ArrayTostring(char *src_array, char* *dest_str, u16 cmd_len)
 {
     *dest_str = (char *)malloc(sizeof(char)*(cmd_len+1) );
-    
+
     if(NULL==(*dest_str) )
         return -1;
-    
+
     memset(*dest_str, 0, sizeof(char)*(cmd_len+1));
     strncpy(*dest_str, src_array, cmd_len);
-    
+
     return 0;
 }
 
-static void USART_CmdProcFinishProc(void)
+static void USART_CmdBufClearProc(void)
 {
+    u16 i;
+
     UsartRxState = 0;
+    for(i=0;i<STDIO_UART_RX_CMD_BUF_LEN;i++){
+        UsartRxCmdBuf[i] = 0;
+    }
+    for(i=0;i<STDIO_UART_RX_CMD_ACT_BUF_LEN;i++){
+        UsartRxCmdActBuf[i] = 0;
+    }
     UsartRxCmdParaBuf = 0;
 }
 
@@ -227,10 +228,7 @@ void USART_CmdProc(void)
 {
     enum USARTTestCtrlCmd cmd;
     enum USARTTestCtrlCmdAct cmd_act;
-    
-    char *UsartRxCmdStrBuf = NULL;
-    char *UsartRxCmdActStrBuf = NULL;
-    
+
     if( USART_ArrayTostring(UsartRxCmdBuf, &UsartRxCmdStrBuf, UsartRxCmdLen) )
         return;
 #ifdef __USE_FULL_INS
@@ -280,8 +278,8 @@ void USART_CmdProc(void)
         cmd = TEST_CTRL_CMD_SN_WRITE;
     }else{
         free(UsartRxCmdStrBuf);
-        UsartRxCmdStrBuf = NULL;
-        USART_CmdProcFinishProc();
+        UsartRxCmdStrBuf = 0;
+        USART_CmdBufClearProc();
         return;
     }
 #else
@@ -331,14 +329,14 @@ void USART_CmdProc(void)
         cmd = TEST_CTRL_CMD_SN_WRITE;
     }else{
         free(UsartRxCmdStrBuf);
-        UsartRxCmdStrBuf = NULL;
-        USART_CmdProcFinishProc();
+        UsartRxCmdStrBuf = 0;
+        USART_CmdBufClearProc();
         return;
     }
 #endif
     free(UsartRxCmdStrBuf);
     UsartRxCmdStrBuf = NULL;
-    
+
     if( USART_ArrayTostring(UsartRxCmdActBuf, &UsartRxCmdActStrBuf, UsartRxCmdActLen) )
         return;
 #ifdef __USE_FULL_INS
@@ -346,6 +344,8 @@ void USART_CmdProc(void)
         cmd_act = TEST_CTRL_CMD_ACT_ON;
     }else if( !(strcmp(UsartRxCmdActStrBuf, "OFF")) ){
         cmd_act = TEST_CTRL_CMD_ACT_OFF;
+    }else if( !(strcmp(UsartRxCmdActStrBuf, "SLEEP")) ){
+        cmd_act = TEST_CTRL_CMD_ACT_SLEEP;
     }else if( !(strcmp(UsartRxCmdActStrBuf, "WRITE")) ){
         cmd_act = TEST_CTRL_CMD_ACT_WRITE;
     }else if( !(strcmp(UsartRxCmdActStrBuf, "READ")) ){
@@ -376,8 +376,8 @@ void USART_CmdProc(void)
         cmd_act = TEST_CTRL_CMD_ACT_ERASE;
     }else{
         free(UsartRxCmdActStrBuf);
-        UsartRxCmdActStrBuf = NULL;
-        USART_CmdProcFinishProc();
+        UsartRxCmdActStrBuf = 0;
+        USART_CmdBufClearProc();
         return;
     }
 #else
@@ -385,6 +385,8 @@ void USART_CmdProc(void)
         cmd_act = TEST_CTRL_CMD_ACT_ON;
     }else if( !(strcmp(UsartRxCmdActStrBuf, "OFF")) ){
         cmd_act = TEST_CTRL_CMD_ACT_OFF;
+    }else if( !(strcmp(UsartRxCmdActStrBuf, "SLP")) ){
+        cmd_act = TEST_CTRL_CMD_ACT_SLEEP;
     }else if( !(strcmp(UsartRxCmdActStrBuf, "WR")) ){
         cmd_act = TEST_CTRL_CMD_ACT_WRITE;
     }else if( !(strcmp(UsartRxCmdActStrBuf, "RD")) ){
@@ -415,17 +417,17 @@ void USART_CmdProc(void)
         cmd_act = TEST_CTRL_CMD_ACT_ERASE;
     }else{
         free(UsartRxCmdActStrBuf);
-        UsartRxCmdActStrBuf = NULL;
-        USART_CmdProcFinishProc();
+        UsartRxCmdActStrBuf = 0;
+        USART_CmdBufClearProc();
         return;
     }
 #endif
     free(UsartRxCmdActStrBuf);
-    UsartRxCmdActStrBuf = NULL;
+    UsartRxCmdActStrBuf = 0;
 
     USART_TestCtrlCmdSend(cmd, cmd_act, UsartRxCmdParaBuf);
-    
-    USART_CmdProcFinishProc();
+
+    USART_CmdBufClearProc();
 }
 
 void USART_TestCtrlCmdSend(enum USARTTestCtrlCmd cmd, enum USARTTestCtrlCmdAct cmd_act, int cmd_para)
@@ -562,14 +564,14 @@ static void SweepRobotTest_CtrlMsgManulReadProc(void)
         }else{
             printf("%d,", aSwrbTestData[i]);
         }
-        
+
         aSwrbTestData[i] = 0;
     }
-    
+
     for(i=IRDA_BACK_LIGHT;i<IRDA_LIGHT_NUM;i++)
         gSwrbTestIrDARxCode[i] = 0;
 
-    printf("\r\n");              
+    printf("\r\n");
 }
 
 static void SweepRobotTest_CtrlMsgWheelDirProc(USARTTestCtrlData_t *TestCtrlDat)
@@ -768,7 +770,7 @@ void SweepRobotTest_IrDARxCodeProc(PwrStationSigData_t *PwrSig)
 static void SweepRobotTest_CtrlMsgBuzzerOnProc(USARTTestCtrlData_t *TestCtrlDat)
 {
     switch(TestCtrlDat->Cmd_Para){
-        case BUZZER_ONE_PULS:  
+        case BUZZER_ONE_PULS:
             Buzzer_Play(BUZZER_ONE_PULS, BUZZER_SND_SHORT);
             break;
         case BUZZER_TWO_PULS:
@@ -921,7 +923,7 @@ static void SweepRobotTest_CtrlMsgSNReadFlashProc(u32 addr)
 
 static void SweepRobotTest_CtrlMsgSNReadAllFlashProc(void)
 {
-    printf("SerialNumber:%d%d%d%03d\r\n", UserMEM_HalfWordRead(SWRB_TEST_SN_YEAR_FLASH_ADDR), UserMEM_HalfWordRead(SWRB_TEST_SN_MONTH_FLASH_ADDR),\
+    printf("SerialNumber:%d%02d%02d%03d\r\n", UserMEM_HalfWordRead(SWRB_TEST_SN_YEAR_FLASH_ADDR), UserMEM_HalfWordRead(SWRB_TEST_SN_MONTH_FLASH_ADDR),\
                            UserMEM_HalfWordRead(SWRB_TEST_SN_DATE_FLASH_ADDR), UserMEM_HalfWordRead(SWRB_TEST_SN_SNUM_FLASH_ADDR) );
 }
 
@@ -981,6 +983,7 @@ void SweepRobotTest_StartCtrlMsgPorc(USARTTestCtrlData_t *TestCtrlDat)
                 case TEST_CTRL_CMD_ACT_READ:
                     SweepRobotTest_CtrlMsgSensorReadProc(TestCtrlDat);
                     break;
+                default:break;
             }
             break;
         default:break;

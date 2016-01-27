@@ -3023,6 +3023,9 @@
         <name>$PROJ_DIR$\..\..\User\APP\SweepRobot.c</name>
       </file>
       <file>
+        <name>$PROJ_DIR$\..\..\User\APP\SweepRobotSlam.c</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\..\..\User\APP\SweepRobotTest.c</name>
       </file>
     </group>

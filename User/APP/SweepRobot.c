@@ -180,14 +180,18 @@ void SweepRobot_Start(void)
                         }
                     }else{
                         switch(MainMsgQ->Msg.type){
+                            case MSG_TYPE_PM:
+                                SweepRobot_PMMsgProc(MainMsgQ->Msg.Data.PMEvt);
+                                break;
                             case MSG_TYPE_CTRL:
+                                PM_ResetSysTestState();
                                 SweepRobotTest_IrDARxCodeProc(&MainMsgQ->Msg.Data.PSSigDat);
                                 break;
                             case MSG_TYPE_PWR_STATION:
                                 SweepRobotTest_IrDARxCodeProc(&MainMsgQ->Msg.Data.PSSigDat);
                                 break;
                             case MSG_TYPE_TEST_CTRL:
-                                PM_ResetSysIdleState();
+                                PM_ResetSysTestState();
                                 SweepRobotTest_CtrlMsgProc(&MainMsgQ->Msg.Data.TestCtrlDat);
                                 break;
                         }
@@ -478,10 +482,9 @@ void SweepRobot_PMMsgProc(enum PM_Mode mode)
             }
             break;
         case PM_MODE_STANDBY:
-            if(gRobotState==ROBOT_STATE_IDLE){
+            if(gRobotState==ROBOT_STATE_IDLE||ROBOT_STATE_TEST){
                 PM_EnterPwrMode(mode);
-            }
-            else{
+            }else{
                 PM_ResetSysIdleState();
             }
             break;
